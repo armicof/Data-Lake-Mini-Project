@@ -1,12 +1,8 @@
 import os
-import jpype
 import shutil
-import pandas as pd
 import tabula
-from tabula import read_pdf
-import psycopg2
+import pandas as pd
 import csv
-from config import get_connection
 import re
 def ingest_data():
     for filename in os.listdir('.'):
@@ -45,7 +41,7 @@ def extract_pdf():
             dfs[2].columns = columns
             df = pd.concat([dfs[1].iloc[1:],dfs[2]], ignore_index=True, join="outer")
             df = df.set_index('No', drop=True)
-            df = df.reset_index(drop=True)
+            # df = df.reset_index(drop=True)
             for col in ['Nama', 'Kegiatan Usaha', 'Lokasi', 'Status Operasi']:
                 df[col] = clean_text_column(df[col])
             df.to_csv(os.path.join('structured/pdf', filename.replace('.pdf', '.csv')), index=False)
@@ -96,65 +92,6 @@ def extract_txt():
                         # Menulis baris data yang sudah bersih ke file CSV
                         csv_writer.writerow([date_str, username, tweet])
 
-def safe_insert(cursor, query, row):
-    clean_row = [None if pd.isna(val) else val for val in row]
-    cursor.execute(query, tuple(clean_row))
 
-def pdf_to_stg():
-    conn = psycopg2.connect(get_connection())
-    cursor = conn.cursor()  
-    # --- Structured PDF (Financial Statement)
-    for filename in os.listdir('structured/pdf'):
-        if filename.endswith('.csv'):
-            df = pd.read_csv(os.path.join('structured/pdf', filename))
-            df.columns = df.columns.str.strip()  # Hilangkan spasi
-            # if 'Jumlah Aset' in df.columns:
-            #     df['Jumlah Aset'] = pd.to_numeric(df['Jumlah Aset'], errors='coerce')
-            for _, row in df.iterrows():
-                safe_insert(cursor, """
-                    INSERT INTO financial_statement (
-                        nama, kegiatan_usaha, lokasi, tahun_komersil,
-                        status_operasi, jumlah_aset, satuan, mata_uang, persentase
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, row)
-        conn.commit()
-        cursor.close()
-        conn.close()    
-
-def csv_to_stg():
-    conn = psycopg2.connect(get_connection())
-    cursor = conn.cursor()
-    # --- Structured CSV (Temperature)
-    for filename in os.listdir('structured/csv'):
-        if filename.endswith('.csv'):
-            df = pd.read_csv(os.path.join('structured/csv', filename))
-            for _, row in df.iterrows():
-                safe_insert(cursor, """
-                    INSERT INTO warehouse_temperature (
-                        id, room_id, noted_date, temp, in_out
-                    ) VALUES (%s, %s, %s, %s, %s)
-                """, row)
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-
-def txt_to_stg():
-    conn = psycopg2.connect(get_connection())
-    cursor = conn.cursor()
-    # --- Structured TXT (Tweets)
-    for filename in os.listdir('structured/txt'):
-        if filename.endswith('.csv'):
-            df = pd.read_csv(os.path.join('structured/txt', filename))
-            for _, row in df.iterrows():
-                safe_insert(cursor, """
-                    INSERT INTO tweet_data (
-                        date, username, tweet
-                    ) VALUES (%s, %s, %s)
-                """, row)
-
-    conn.commit()
-    cursor.close()
-    conn.close()
 
     

@@ -1,4 +1,5 @@
-from ingest import ingest_data, extract_pdf, extract_csv, extract_txt, pdf_to_stg, csv_to_stg, txt_to_stg
+from ingest import ingest_data, extract_pdf, extract_csv, extract_txt
+from analyze import pdf_to_stg, csv_to_stg, txt_to_stg
 print("Starting data ingestion...")
 ingest_data() 
 print("Data ingestion completed.")
