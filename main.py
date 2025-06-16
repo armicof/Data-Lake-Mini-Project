@@ -1,5 +1,7 @@
-from ingest import ingest_data, extract_pdf, extract_csv, extract_txt
-from analyze import pdf_to_stg, csv_to_stg, txt_to_stg
+from ingest import ingest_data
+from analyze import pdf_to_stg, csv_to_stg, txt_to_stg, extract_pdf, extract_csv,extract_txt
+from structured import create_pdf_star_schema
+
 print("Starting data ingestion...")
 ingest_data() 
 print("Data ingestion completed.")
@@ -9,7 +11,6 @@ extract_pdf()
 extract_csv()
 extract_txt()
 print("Data extraction completed.")
-# This is the main entry point for the data ingestion and extraction process.
 
 
 print("Starting load staging...")
@@ -18,4 +19,5 @@ csv_to_stg()
 txt_to_stg()
 print("Load staging completed.")
 
-# drop_table()
+print("Creating Star Schema")
+create_pdf_star_schema()
