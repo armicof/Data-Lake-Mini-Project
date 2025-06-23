@@ -1,7 +1,7 @@
 import psycopg2
 import os
 import pandas as pd
-from config import get_connection
+from config import get_stg_connection
 import tabula
 import pandas as pd
 import csv
@@ -93,7 +93,7 @@ def extract_txt():
 
 
 def pdf_to_stg():
-    conn = psycopg2.connect(get_connection())
+    conn = psycopg2.connect(get_stg_connection())
     cursor = conn.cursor()  
     # --- Structured PDF (Financial Statement)
     for filename in os.listdir('structured/pdf'):
@@ -125,7 +125,7 @@ def pdf_to_stg():
     conn.close()    
 
 def csv_to_stg():
-    conn = psycopg2.connect(get_connection())
+    conn = psycopg2.connect(get_stg_connection())
     cursor = conn.cursor()
     # --- Structured CSV (Temperature)
     for filename in os.listdir('structured/csv'):
@@ -150,7 +150,7 @@ def csv_to_stg():
 
 
 def txt_to_stg():
-    conn = psycopg2.connect(get_connection())
+    conn = psycopg2.connect(get_stg_connection())
     cursor = conn.cursor()
     # --- Structured TXT (Tweets)
     for filename in os.listdir('structured/txt'):
